@@ -7,6 +7,7 @@ import { connectDB } from "./config/db.js";
 
 //Importing Routes
 import userRoutes from "./routes/user.route.js";
+import companyRoutes from "./routes/company.route.js";
 import morgan from "morgan";
 
 const app = express();
@@ -14,7 +15,6 @@ const app = express();
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-const PORT = process.env.PORT || 8080;
 const corsOptions = {
   origin: "http://localhost:5173",
   optionsSuccessStatus: 200,
@@ -23,8 +23,11 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(morgan("dev"));
 
+const PORT = process.env.PORT || 8080;
+
 //Using Routes
 app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/company", companyRoutes);
 
 app.listen(PORT, async () => {
   await connectDB();
