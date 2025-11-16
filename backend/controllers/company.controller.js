@@ -7,7 +7,7 @@ async function registerCompany(req, res) {
   try {
     const { companyName, location, description, website } = req.body;
 
-    // Required fields
+    // Required fields in db
     if (!companyName || !location) {
       return res
         .status(400)
