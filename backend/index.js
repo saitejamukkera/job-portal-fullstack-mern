@@ -8,6 +8,7 @@ import { connectDB } from "./config/db.js";
 //Importing Routes
 import userRoutes from "./routes/user.route.js";
 import companyRoutes from "./routes/company.route.js";
+import jobRoutes from "./routes/job.route.js";
 import morgan from "morgan";
 
 const app = express();
@@ -28,6 +29,7 @@ const PORT = process.env.PORT || 8080;
 //Using Routes
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/company", companyRoutes);
+app.use("/api/v1/jobs", jobRoutes);
 
 app.listen(PORT, async () => {
   await connectDB();
