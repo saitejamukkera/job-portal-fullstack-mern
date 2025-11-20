@@ -1,5 +1,4 @@
 import express from "express";
-
 import {
   register,
   login,
@@ -11,6 +10,6 @@ const router = express.Router();
 
 router.post("/register", register);
 router.post("/login", login);
-router.put("/profile/update", auth, updateUserProfile);
+router.put("/update-profile", auth, updateUserProfile);
 
 export default router;

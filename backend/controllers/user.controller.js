@@ -36,7 +36,9 @@ async function register(req, res) {
       role,
     });
 
-    return res.status(201).json({ message: "User registered successfully" });
+    return res
+      .status(201)
+      .json({ message: "User registered successfully.Please Login" });
   } catch (error) {
     console.error("Registration error:", error);
     return res.status(500).json({ message: "Server error" });
@@ -77,7 +79,6 @@ async function login(req, res) {
 
     const token = generateToken(user._id);
 
-    // formatted user to send back
     const cleanUser = {
       _id: user._id,
       fullName: user.fullName,
@@ -103,28 +104,20 @@ async function updateUserProfile(req, res) {
   try {
     const userId = req.user._id;
     const { fullName, phoneNumber, email, bio, skills } = req.body;
-    const file = req.file; // optional: profile picture
 
     const user = await userModel.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // SAFELY update fields ONLY if they are provided in the request
     if (fullName !== undefined) user.fullName = fullName;
     if (phoneNumber !== undefined) user.phoneNumber = phoneNumber;
     if (email !== undefined) user.email = email;
-
     if (bio !== undefined) user.profile.bio = bio;
 
     if (skills !== undefined) {
       user.profile.skills =
         typeof skills === "string" ? skills.split(",") : skills;
-    }
-
-    // If user uploaded a new profile picture (Cloudinary path)
-    if (file) {
-      user.profile.profilePicture = file.path;
     }
 
     await user.save();
