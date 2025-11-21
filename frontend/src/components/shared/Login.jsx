@@ -2,17 +2,49 @@ import { useState } from "react";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../ui/button";
+import { toast } from "sonner";
+import axios from "axios";
+import { USER_API_END_POINT } from "../../utilis/User_Endpoints";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("Applicant");
+  const [role, setRole] = useState("applicant"); // lowercase
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  async function handleSubmit() {
-    console.log("handle submit");
+  const navigate = useNavigate();
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      const resp = await axios.post(`${USER_API_END_POINT}/login`, {
+        email,
+        password,
+        role,
+      });
+
+      if (resp.status === 200) {
+        toast.success(resp.data.message);
+
+        // Save token + user
+        localStorage.setItem("token", `Bearer ${resp.data.token}`);
+        localStorage.setItem("user", JSON.stringify(resp.data.user));
+
+        navigate("/");
+      }
+    } catch (err) {
+      const msg = err.response?.data?.message || "Server error";
+      setError(msg);
+      toast.error(msg);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -31,6 +63,7 @@ function Login() {
         <h1 className="font-semibold text-2xl mb-6 text-center">Login</h1>
 
         <div className="flex flex-col gap-4">
+          {/* Email */}
           <div>
             <Label>Email</Label>
             <Input
@@ -43,6 +76,7 @@ function Login() {
             />
           </div>
 
+          {/* Password */}
           <div>
             <Label>Password</Label>
             <Input
@@ -55,6 +89,7 @@ function Login() {
             />
           </div>
 
+          {/* Role */}
           <div className="flex flex-col md:flex-row gap-6">
             <div className="flex flex-col gap-2">
               <Label>Role</Label>
@@ -64,19 +99,22 @@ function Login() {
                 className="flex gap-4 mt-3"
               >
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="Applicant" id="Applicant" />
+                  <RadioGroupItem value="applicant" id="Applicant" />
                   <Label htmlFor="Applicant">Applicant</Label>
                 </div>
 
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="Recruiter" id="Recruiter" />
+                  <RadioGroupItem value="recruiter" id="Recruiter" />
                   <Label htmlFor="Recruiter">Recruiter</Label>
                 </div>
               </RadioGroup>
             </div>
           </div>
 
-          <Button className="w-full mt-6 cursor-pointer">Login</Button>
+          {/* Login Button */}
+          <Button type="submit" className="w-full mt-6 cursor-pointer">
+            {loading ? "Logging in..." : "Login"}
+          </Button>
 
           {error && (
             <p className="text-red-500 text-center text-sm mt-2">{error}</p>

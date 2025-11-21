@@ -13,31 +13,44 @@ function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [role, setRole] = useState("Applicant");
+  const [role, setRole] = useState("applicant");
   const [error, setError] = useState("");
-  const [profilePic, setProfilePic] = useState("");
+  const [profilePic, setProfilePic] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
   async function handleSubmit(e) {
     e.preventDefault();
+    setLoading(true);
+
     try {
-      const resp = await axios.post(`${USER_API_END_POINT}/register`, {
-        fullName,
-        email,
-        password,
-        phoneNumber,
-        role,
-      });
-      setLoading(true);
+      const formData = new FormData();
+      formData.append("fullName", fullName);
+      formData.append("email", email);
+      formData.append("password", password);
+      formData.append("phoneNumber", phoneNumber);
+      formData.append("role", role);
+
+      if (profilePic) {
+        formData.append("profilePic", profilePic);
+      }
+
+      const resp = await axios.post(
+        `${USER_API_END_POINT}/register`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+
       if (resp.status === 201) {
         toast.success(resp.data.message);
         navigate("/login");
       }
     } catch (err) {
-      setError(err.response?.data?.msg || "Server error");
-      console.log("error while registering: ", err.message);
+      setError(err.response?.data?.message || "Server error");
+      console.log("error while registering:", err);
     } finally {
       setLoading(false);
     }
@@ -53,7 +66,6 @@ function Signup() {
           shadow-sm 
           bg-background 
           text-foreground
-          transition-colors
         "
         onSubmit={handleSubmit}
       >
@@ -68,7 +80,6 @@ function Signup() {
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               className="mt-2"
-              name="fullName"
               required
             />
           </div>
@@ -81,7 +92,6 @@ function Signup() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="mt-2"
-              name="email"
               required
             />
           </div>
@@ -94,7 +104,6 @@ function Signup() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="mt-2"
-              name="password"
               required
             />
           </div>
@@ -107,7 +116,6 @@ function Signup() {
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
               className="mt-2"
-              name="phoneNumber"
               required
             />
           </div>
@@ -139,13 +147,12 @@ function Signup() {
                 type="file"
                 className="cursor-pointer mt-3"
                 onChange={(e) => setProfilePic(e.target.files[0])}
-                name="profilePic"
               />
             </div>
           </div>
 
           <Button type="submit" className="w-full mt-6 cursor-pointer">
-            Sign Up
+            {loading ? "Signing up..." : "Sign Up"}
           </Button>
 
           {error && (
