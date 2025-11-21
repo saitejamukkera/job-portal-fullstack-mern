@@ -1,28 +1,35 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
+import { Spinner } from "@/components/ui/spinner";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
 import axios from "axios";
 import { USER_API_END_POINT } from "../../utilis/User_Endpoints";
+import { useDispatch, useSelector } from "react-redux";
+import { setLoading } from "../../redux/authSlice";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("applicant"); // lowercase
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  //const inputRef = useRef(null);
+  //const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
+  const dispatch = useDispatch(); // redux dispatch
+  const { loading } = useSelector((store) => store.auth); // get loading from redux
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setLoading(true);
     setError("");
 
     try {
+      dispatch(setLoading(true));
+
       const resp = await axios.post(`${USER_API_END_POINT}/login`, {
         email,
         password,
@@ -30,12 +37,11 @@ function Login() {
       });
 
       if (resp.status === 200) {
-        toast.success(resp.data.message);
-
         // Save token + user
         localStorage.setItem("token", `Bearer ${resp.data.token}`);
         localStorage.setItem("user", JSON.stringify(resp.data.user));
 
+        toast.success(`Welcome back ${resp.data.user.fullName}.`);
         navigate("/");
       }
     } catch (err) {
@@ -43,7 +49,7 @@ function Login() {
       setError(msg);
       toast.error(msg);
     } finally {
-      setLoading(false);
+      dispatch(setLoading(false)); // set loading false in redux
     }
   }
 
@@ -72,6 +78,7 @@ function Login() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="mt-2"
+              onFocus={() => setError("")}
               required
             />
           </div>
@@ -85,6 +92,7 @@ function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="mt-2"
+              onFocus={() => setError("")}
               required
             />
           </div>
@@ -111,16 +119,24 @@ function Login() {
             </div>
           </div>
 
-          {/* Login Button */}
-          <Button type="submit" className="w-full mt-6 cursor-pointer">
-            {loading ? "Logging in..." : "Login"}
-          </Button>
-
+          {/* Error */}
           {error && (
             <p className="text-red-500 text-center text-sm mt-2">{error}</p>
           )}
 
-          <p className="text-center mt-4 text-muted-foreground">
+          {/* Button */}
+          {loading ? (
+            <Button disabled className="w-full cursor-not-allowed">
+              <Spinner />
+              Loading...
+            </Button>
+          ) : (
+            <Button type="submit" className="w-full cursor-pointer">
+              Login
+            </Button>
+          )}
+
+          <p className="text-center text-muted-foreground">
             Don't have an account?{" "}
             <Link to="/signup" className="text-primary hover:underline">
               Sign Up

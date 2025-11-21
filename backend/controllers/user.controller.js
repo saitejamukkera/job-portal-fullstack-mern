@@ -73,7 +73,10 @@ async function login(req, res) {
 
     if (role !== user.role) {
       return res.status(400).json({
-        message: `User is not registered as a ${role}. Please use the correct role to login.`,
+        message: `User is not registered as 
+        ${
+          role === "applicant" ? "an" : "a"
+        } ${role}. Please use the correct role to login.`,
       });
     }
 

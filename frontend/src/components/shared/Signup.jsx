@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
+import { Spinner } from "@/components/ui/spinner";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
 import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+import { setLoading } from "../../redux/authSlice";
 import { USER_API_END_POINT } from "../../utilis/User_Endpoints";
 
 function Signup() {
@@ -16,15 +19,20 @@ function Signup() {
   const [role, setRole] = useState("applicant");
   const [error, setError] = useState("");
   const [profilePic, setProfilePic] = useState(null);
-  const [loading, setLoading] = useState(false);
+  //const [loading, setLoading] = useState(false);
+
+  const dispatch = useDispatch(); // redux dispatch
+  const { loading } = useSelector((store) => store.auth); // get loading from redux
 
   const navigate = useNavigate();
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setLoading(true);
+    //setLoading(true);
+    setError("");
 
     try {
+      dispatch(setLoading(true));
       const formData = new FormData();
       formData.append("fullName", fullName);
       formData.append("email", email);
@@ -52,7 +60,7 @@ function Signup() {
       setError(err.response?.data?.message || "Server error");
       console.log("error while registering:", err);
     } finally {
-      setLoading(false);
+      dispatch(setLoading(false)); // set loading false in redux
     }
   }
 
@@ -80,6 +88,7 @@ function Signup() {
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               className="mt-2"
+              onFocus={() => setError("")}
               required
             />
           </div>
@@ -92,6 +101,7 @@ function Signup() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="mt-2"
+              onFocus={() => setError("")}
               required
             />
           </div>
@@ -104,6 +114,7 @@ function Signup() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="mt-2"
+              onFocus={() => setError("")}
               required
             />
           </div>
@@ -116,6 +127,7 @@ function Signup() {
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
               className="mt-2"
+              onFocus={() => setError("")}
               required
             />
           </div>
@@ -151,12 +163,19 @@ function Signup() {
             </div>
           </div>
 
-          <Button type="submit" className="w-full mt-6 cursor-pointer">
-            {loading ? "Signing up..." : "Sign Up"}
-          </Button>
-
           {error && (
             <p className="text-red-500 text-center text-sm mt-2">{error}</p>
+          )}
+
+          {loading ? (
+            <Button disabled className="w-full cursor-not-allowed">
+              <Spinner />
+              Signing up.....
+            </Button>
+          ) : (
+            <Button type="submit" className="w-full cursor-pointer">
+              Sign Up
+            </Button>
           )}
 
           <p className="text-center mt-4 text-muted-foreground">
