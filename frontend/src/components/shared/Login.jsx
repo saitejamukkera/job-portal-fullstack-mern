@@ -11,7 +11,9 @@ function Login() {
   const [role, setRole] = useState("Applicant");
   const [error, setError] = useState("");
 
-  async function handleSubmit() {}
+  async function handleSubmit() {
+    console.log("handle submit");
+  }
 
   return (
     <div className="flex items-center justify-center w-full min-h-screen px-4">
