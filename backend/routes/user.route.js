@@ -4,13 +4,13 @@ import {
   login,
   updateUserProfile,
 } from "../controllers/user.controller.js";
-import { singleUpload } from "../middlewares/multer.js";
+import { upload } from "../middlewares/multer.js";
 import auth from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/register", singleUpload, register);
+router.post("/register", upload, register);
 router.post("/login", login);
-router.put("/profile/update", auth, singleUpload, updateUserProfile);
+router.put("/profile/update", auth, upload, updateUserProfile);
 
 export default router;

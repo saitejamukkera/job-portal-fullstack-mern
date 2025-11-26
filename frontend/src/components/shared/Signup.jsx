@@ -40,7 +40,7 @@ function Signup() {
       formData.append("role", role);
 
       if (file) {
-        formData.append("file", file);
+        formData.append("profilePic", file);
       }
 
       const resp = await axios.post(

@@ -28,7 +28,7 @@ const userSchema = new mongoose.Schema(
       bio: { type: String },
       skills: { type: [String], default: [] },
       resumeURL: { type: String, default: "" },
-      resumeOriginalName: { type: String },
+      resumeOriginalName: { type: String, default: "NoName.pdf" },
       companyApplied: [
         {
           //Add multiple companies applied for later
@@ -36,7 +36,8 @@ const userSchema = new mongoose.Schema(
           ref: "Company",
         },
       ],
-      profilePicture: { type: String, default: "" },
+      profilePictureURL: { type: String, default: "" },
+      profilePictureOriginalName: { type: String, default: "" },
     },
   },
   { timestamps: true }

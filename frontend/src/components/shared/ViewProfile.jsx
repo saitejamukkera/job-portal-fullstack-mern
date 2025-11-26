@@ -6,13 +6,13 @@ import { Label } from "../ui/label";
 import { Link } from "react-router-dom";
 import AppliedJobs from "./AppliedJobs";
 import { useState } from "react";
-import UpdateProfileModal from "../ui/UpdateProfileModal";
+import UpdateProfileModal from "./UpdateProfileModal";
 import { useSelector } from "react-redux";
 
 function ViewProfile() {
   //const skills = ["JavaScript", "React", "Node.js", "CSS", "HTML"];
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { user } = useSelector((store) => store.auth);
+  const { user } = useSelector((state) => state.auth);
   const isResumeUploaded = Boolean(user?.profile?.resumeURL);
 
   return (
@@ -24,14 +24,17 @@ function ViewProfile() {
           <div className="flex items-center gap-4">
             <Avatar className="h-20 w-20 shadow-sm">
               <AvatarImage
-                src={user?.profile?.avatar || "https://github.com/shadcn.png"}
+                src={
+                  user?.profile?.profilePictureURL ||
+                  "https://github.com/shadcn.png"
+                }
                 alt="User avatar"
               />
             </Avatar>
 
             <div className="flex flex-col gap-2">
               <h1 className="font-semibold text-xl">
-                {user?.fullName || "Sai Teja"}
+                {user?.fullName || "No Name Provided"}
               </h1>
               <p className="text-sm text-muted-foreground">
                 {user?.profile?.bio || "No bio available"}

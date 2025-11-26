@@ -1,21 +1,38 @@
+import { useState } from "react";
 import { Popover, PopoverTrigger, PopoverContent } from "../ui/popover";
 import { Avatar, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
 import { LuLogOut } from "react-icons/lu";
 import { FaRegUser } from "react-icons/fa";
 import { ModeToggle } from "../ui/mode-toggle";
-import { Link } from "react-router-dom";
-import { useSelector } from "react-redux";
-
-function handleLogout() {
-  // Clear local storage
-  localStorage.removeItem("token");
-  localStorage.removeItem("user");
-}
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "sonner";
+import { setUser } from "@/redux/authSlice";
 
 function NavBar() {
   const { user } = useSelector((store) => store.auth);
-  //console.log(user);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const [open, setOpen] = useState(false);
+
+  function handleLogout() {
+    try {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      dispatch(setUser(null));
+
+      setOpen(false);
+
+      toast.success("Logged out successfully!");
+      navigate("/");
+    } catch (error) {
+      console.error(error?.message);
+      toast.error("Error logging out. Please try again.");
+    }
+  }
+
   return (
     <div className="bg-white dark:bg-gray-950 shadow-sm dark:shadow-lg transition-colors">
       <div className="flex justify-between items-center mx-auto max-w-7xl h-16 px-4">
@@ -29,100 +46,79 @@ function NavBar() {
 
         <div className="flex items-center font-medium gap-7">
           <ul className="flex items-center gap-5">
-            <Link
-              to="/"
-              className="cursor-pointer text-gray-800 dark:text-gray-200 transition-colors hover:text-[#F83002] dark:hover:text-[#F83002]"
-            >
+            <Link to="/" className="cursor-pointer hover:text-[#F83002]">
               Home
             </Link>
-            <Link
-              to="/browse"
-              className="cursor-pointer text-gray-800 dark:text-gray-200 transition-colors hover:text-[#F83002] dark:hover:text-[#F83002]"
-            >
+            <Link to="/browse" className="cursor-pointer hover:text-[#F83002]">
               Browse
             </Link>
-            <Link
-              to="/jobs"
-              className="cursor-pointer text-gray-800 dark:text-gray-200 transition-colors hover:text-[#F83002] dark:hover:text-[#F83002]"
-            >
+            <Link to="/jobs" className="cursor-pointer hover:text-[#F83002]">
               Jobs
             </Link>
           </ul>
+
           {!user ? (
-            <div className="flex gap-5 ">
+            <div className="flex gap-5">
               <Link to="/login">
-                <Button
-                  variant="outline"
-                  className="cursor-pointer text-gray-800 dark:text-gray-200 font-medium"
-                >
-                  Login
-                </Button>
+                <Button variant="outline">Login</Button>
               </Link>
               <Link to="signup">
-                <Button className="cursor-pointer  font-medium">Signup</Button>
+                <Button>Signup</Button>
               </Link>
             </div>
           ) : (
-            <Popover>
+            <Popover open={open} onOpenChange={setOpen}>
               <PopoverTrigger>
-                <Avatar className="cursor-pointer size-10 hover:ring-2 hover:ring-gray-300 dark:hover:ring-gray-600 transition">
+                <Avatar className="cursor-pointer size-10 hover:ring-2 transition">
                   <AvatarImage
-                    src="https://github.com/shadcn.png"
-                    alt="User avatar"
+                    src={
+                      user?.profile?.profilePictureURL ||
+                      "https://github.com/shadcn.png"
+                    }
                   />
                 </Avatar>
               </PopoverTrigger>
 
-              <PopoverContent className="w-72 p-4 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 dark:bg-gray-900 transition-colors">
+              <PopoverContent className="w-72 p-4 rounded-xl shadow-xl border">
                 {/* Header */}
                 <div className="flex items-center gap-4">
                   <Avatar className="size-14 shadow-sm">
                     <AvatarImage
-                      src={`${
-                        user?.profile?.profilePicture ||
+                      src={
+                        user?.profile?.profilePictureURL ||
                         "https://github.com/shadcn.png"
-                      }`}
-                      alt="User avatar"
+                      }
                     />
                   </Avatar>
 
                   <div className="flex flex-col gap-1">
-                    <h4 className="font-semibold text-base text-gray-900 dark:text-gray-100 transition-colors">
-                      {user?.fullName}
-                    </h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 leading-tight transition-colors">
+                    <h4 className="font-semibold">{user?.fullName}</h4>
+                    <p className="text-sm text-gray-500">
                       {user?.profile?.bio}
                     </p>
                   </div>
                 </div>
 
-                {/* Divider */}
-                <div className="h-px w-full bg-gray-200 dark:bg-gray-700 my-3 transition-colors" />
+                <div className="h-px w-full bg-gray-200 my-3" />
 
-                {/* Menu Items */}
-                <div className="flex flex-col gap-1 ">
-                  <Link to="/view-profile">
+                <div className="flex flex-col gap-1">
+                  <Link to="/view-profile" onClick={() => setOpen(false)}>
                     <Button
                       variant="ghost"
-                      className="w-full flex justify-start gap-3 px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                      className="w-full flex justify-start gap-3 px-3 py-2 cursor-pointer"
                     >
-                      <FaRegUser className="size-5 text-gray-600 dark:text-gray-300 transition-colors" />
-
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-200 transition-colors">
-                        View Profile
-                      </span>
+                      <FaRegUser className="size-5" />
+                      <span>View Profile</span>
                     </Button>
                   </Link>
 
                   <Button
                     variant="ghost"
-                    className="w-full flex justify-start gap-3 px-3 py-2 cursor-pointer hover:bg-red-50 dark:hover:bg-red-800 transition-colors"
                     onClick={handleLogout}
+                    className="w-full flex justify-start gap-3 px-3 py-2 cursor-pointer"
                   >
-                    <LuLogOut className="size-5 text-red-500 dark:text-red-400 transition-colors" />
-                    <span className="text-sm font-medium text-red-600 dark:text-red-300 transition-colors">
-                      Logout
-                    </span>
+                    <LuLogOut className="size-5 text-red-500" />
+                    <span className="text-red-500">Logout</span>
                   </Button>
                 </div>
               </PopoverContent>

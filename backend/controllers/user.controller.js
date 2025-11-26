@@ -3,8 +3,34 @@ import userModel from "../models/user.model.js";
 import generateToken from "../utils/generateToken.js";
 import cloudinary from "../utils/cloudinary.js";
 
+// Cloudinary upload helper (stream-based)
+function uploadToCloudinary(buffer, originalName, folder) {
+  const clean = originalName.replace(/\s+/g, "_");
+
+  return new Promise((resolve, reject) => {
+    cloudinary.uploader
+      .upload_stream(
+        {
+          folder,
+          public_id: clean,
+          use_filename: true,
+          unique_filename: false,
+          overwrite: true,
+          resource_type: "raw",
+        },
+        (err, result) => {
+          if (err) reject(err);
+          else resolve(result);
+        }
+      )
+      .end(buffer);
+  });
+}
+
+// ---------------------------------------------------------------------------
 // REGISTER
-async function register(req, res) {
+// ---------------------------------------------------------------------------
+export async function register(req, res) {
   try {
     const { fullName, email, password, phoneNumber, role } = req.body;
 
@@ -12,90 +38,94 @@ async function register(req, res) {
       return res.status(400).json({ message: "All fields are required." });
     }
 
-    const userExists = await userModel.findOne({ email });
-    if (userExists) {
-      return res
-        .status(400)
-        .json({ message: "User already exists. Please login." });
+    const exists = await userModel.findOne({ email });
+    if (exists) {
+      return res.status(400).json({ message: "User already exists." });
     }
 
-    const validRoles = ["applicant", "recruiter"];
+    const hash = await bcrypt.hash(password, 10);
 
-    if (!validRoles.includes(role)) {
-      return res.status(400).json({
-        message: "Invalid role. Allowed roles are applicant or recruiter only.",
-      });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    await userModel.create({
+    const userData = {
       fullName,
       email,
-      password: hashedPassword,
+      password: hash,
       phoneNumber,
       role,
-    });
+      profile: {
+        bio: "",
+        skills: [],
+        companyApplied: [],
+        profilePictureURL: "",
+        profilePictureOriginalName: "",
+        resumeURL: "",
+        resumeOriginalName: "",
+      },
+    };
 
-    return res
-      .status(201)
-      .json({ message: "User registered successfully.Please Login" });
+    // Profile picture upload
+    const profilePic = req.files?.profilePicture?.[0];
+    if (profilePic) {
+      const upload = await uploadToCloudinary(
+        profilePic.buffer,
+        profilePic.originalname,
+        "jobportal_profilepictures"
+      );
+
+      userData.profile.profilePictureURL = upload.secure_url;
+      userData.profile.profilePictureOriginalName = profilePic.originalname;
+    }
+
+    // Resume upload
+    const resume = req.files?.resume?.[0];
+    if (resume) {
+      const upload = await uploadToCloudinary(
+        resume.buffer,
+        resume.originalname,
+        "jobportal_resumes"
+      );
+
+      userData.profile.resumeURL = upload.secure_url;
+      userData.profile.resumeOriginalName = resume.originalname;
+    }
+
+    await userModel.create(userData);
+
+    return res.status(201).json({
+      message: "User registered successfully.",
+    });
   } catch (error) {
     console.error("Registration error:", error);
     return res.status(500).json({ message: "Server error" });
   }
 }
 
+// ---------------------------------------------------------------------------
 // LOGIN
-async function login(req, res) {
+// ---------------------------------------------------------------------------
+export async function login(req, res) {
   try {
     const { email, password, role } = req.body;
 
-    if (!email || !password || !role) {
-      return res.status(400).json({
-        message: "Email, password, and role are required.",
-      });
-    }
-
-    let user = await userModel.findOne({ email });
-    console.log(user);
+    const user = await userModel.findOne({ email });
     if (!user) {
-      return res.status(400).json({
-        message: "No such user exists. Please register.",
-      });
+      return res.status(400).json({ message: "No user found." });
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      return res
-        .status(400)
-        .json({ message: "Invalid password. Please try again." });
+    const ok = await bcrypt.compare(password, user.password);
+    if (!ok) {
+      return res.status(400).json({ message: "Invalid password." });
     }
 
     if (role !== user.role) {
-      return res.status(400).json({
-        message: `User is not registered as 
-        ${
-          role === "applicant" ? "an" : "a"
-        } ${role}. Please use the correct role to login.`,
-      });
+      return res.status(400).json({ message: "Incorrect role selected." });
     }
 
     const token = generateToken(user._id);
 
-    const cleanUser = {
-      _id: user._id,
-      fullName: user.fullName,
-      email: user.email,
-      phoneNumber: user.phoneNumber,
-      role: user.role,
-      profile: user.profile,
-    };
-
     return res.status(200).json({
       message: "Login successful",
       token,
-      user: cleanUser,
+      user,
     });
   } catch (error) {
     console.error("Login error:", error);
@@ -103,57 +133,55 @@ async function login(req, res) {
   }
 }
 
+// ---------------------------------------------------------------------------
 // UPDATE PROFILE
-async function updateUserProfile(req, res) {
+// ---------------------------------------------------------------------------
+export async function updateUserProfile(req, res) {
   try {
     const userId = req.user._id;
-
     const { fullName, email, phoneNumber, bio, skills } = req.body;
 
     const user = await userModel.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    //Update basic fields
-    if (fullName !== undefined) user.fullName = fullName;
-    if (email !== undefined) user.email = email;
-    if (phoneNumber !== undefined) user.phoneNumber = phoneNumber;
-    if (bio !== undefined) user.profile.bio = bio;
+    if (fullName) user.fullName = fullName;
+    if (email) user.email = email;
+    if (phoneNumber) user.phoneNumber = phoneNumber;
+    if (bio) user.profile.bio = bio;
 
-    if (skills !== undefined) {
+    if (skills) {
       user.profile.skills = skills
         .split(",")
         .map((s) => s.trim())
         .filter(Boolean);
     }
 
-    // Handle resume upload
-    if (req.file) {
-      const originalName = req.file.originalname.replace(/\s+/g, "_");
+    // Profile picture update
+    const profilePic = req.files?.profilePicture?.[0];
+    if (profilePic) {
+      const upload = await uploadToCloudinary(
+        profilePic.buffer,
+        profilePic.originalname,
+        "jobportal_profilepictures"
+      );
 
-      const cloudResult = await new Promise((resolve, reject) => {
-        cloudinary.uploader
-          .upload_stream(
-            {
-              folder: "jobportal_resumes",
-              public_id: originalName,
-              use_filename: true,
-              unique_filename: false,
-              overwrite: true,
-              resource_type: "raw",
-            },
-            (error, result) => {
-              if (error) reject(error);
-              else resolve(result);
-            }
-          )
-          .end(req.file.buffer);
-      });
-
-      user.profile.resumeURL = cloudResult.secure_url;
-      user.profile.resumeOriginalName = req.file.originalname;
+      user.profile.profilePictureURL = upload.secure_url;
+      user.profile.profilePictureOriginalName = profilePic.originalname;
     }
 
-    //Save the user
+    // Resume update
+    const resume = req.files?.resume?.[0];
+    if (resume) {
+      const upload = await uploadToCloudinary(
+        resume.buffer,
+        resume.originalname,
+        "jobportal_resumes"
+      );
+
+      user.profile.resumeURL = upload.secure_url;
+      user.profile.resumeOriginalName = resume.originalname;
+    }
+
     await user.save();
 
     return res.status(200).json({
@@ -165,5 +193,3 @@ async function updateUserProfile(req, res) {
     return res.status(500).json({ message: "Update profile error" });
   }
 }
-
-export { register, login, updateUserProfile };

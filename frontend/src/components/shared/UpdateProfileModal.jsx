@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Button } from "./button";
+import { Button } from "../ui/button";
 import {
   Dialog,
   DialogContent,
@@ -7,11 +7,11 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "./dialog";
-import { Input } from "./input";
-import { Label } from "./label";
-import { Textarea } from "./textarea";
-import { Spinner } from "./spinner";
+} from "../ui/dialog";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import { Textarea } from "../ui/textarea";
+import { Spinner } from "../ui/spinner";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { toast } from "sonner";
@@ -30,10 +30,10 @@ function UpdateProfileModal({ isModalOpen, setIsModalOpen }) {
     phoneNumber: "",
     bio: "",
     skills: "",
-    file: null,
+    profilePictureURL: null,
+    resumeURL: null,
   });
 
-  //Reset modal inputs whenever it opens
   useEffect(() => {
     if (isModalOpen && user) {
       setInput({
@@ -42,7 +42,8 @@ function UpdateProfileModal({ isModalOpen, setIsModalOpen }) {
         phoneNumber: user.phoneNumber || "",
         bio: user.profile?.bio || "",
         skills: user.profile?.skills?.join(", ") || "",
-        file: null,
+        profilePictureURL: user.profile?.profilePictureURL || "",
+        resumeURL: user.profile?.resumeURL || "",
       });
     }
   }, [isModalOpen, user]);
@@ -58,8 +59,12 @@ function UpdateProfileModal({ isModalOpen, setIsModalOpen }) {
     formData.append("bio", input.bio);
     formData.append("skills", input.skills);
 
-    if (input.file) {
-      formData.append("file", input.file);
+    if (input.profilePicture) {
+      formData.append("profilePicture", input.profilePicture);
+    }
+
+    if (input.resume) {
+      formData.append("resume", input.resume);
     }
 
     try {
@@ -75,11 +80,10 @@ function UpdateProfileModal({ isModalOpen, setIsModalOpen }) {
           },
         }
       );
+
       if (resp.status === 200) {
-        toast.success(resp.data.message);
-        //Update Redux user so UI refreshes instantly
+        toast.success("Profile updated");
         dispatch(setUser(resp.data.user));
-        console.log(resp.data.user);
         setIsModalOpen(false);
       }
     } catch (error) {
@@ -92,7 +96,7 @@ function UpdateProfileModal({ isModalOpen, setIsModalOpen }) {
 
   return (
     <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-      <DialogContent className="sm:max-w-[450px] border border-border bg-background text-foreground">
+      <DialogContent className="sm:max-w-[450px] border border-border bg-background">
         <DialogHeader>
           <DialogTitle>Update Profile</DialogTitle>
           <DialogDescription className="sr-only">
@@ -101,55 +105,36 @@ function UpdateProfileModal({ isModalOpen, setIsModalOpen }) {
         </DialogHeader>
 
         <form className="space-y-5" onSubmit={handleSubmit}>
-          {/* Name */}
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="justify-end">
-              Name
-            </Label>
+            <Label>Name</Label>
             <Input
-              id="name"
-              type="text"
               value={input.fullName}
               onChange={(e) => setInput({ ...input, fullName: e.target.value })}
               className="col-span-3"
             />
           </div>
 
-          {/* Bio */}
           <div className="grid grid-cols-4 items-start gap-4">
-            <Label htmlFor="bio" className="justify-end pt-2">
-              Bio
-            </Label>
+            <Label>Bio</Label>
             <Textarea
-              id="bio"
               value={input.bio}
               onChange={(e) => setInput({ ...input, bio: e.target.value })}
               className="col-span-3"
             />
           </div>
 
-          {/* Email */}
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="email" className="justify-end">
-              Email
-            </Label>
+            <Label>Email</Label>
             <Input
-              id="email"
-              type="email"
               value={input.email}
               onChange={(e) => setInput({ ...input, email: e.target.value })}
               className="col-span-3"
             />
           </div>
 
-          {/* Phone Number */}
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="phone" className="justify-end">
-              Number
-            </Label>
+            <Label>Number</Label>
             <Input
-              id="phone"
-              type="text"
               value={input.phoneNumber}
               onChange={(e) =>
                 setInput({ ...input, phoneNumber: e.target.value })
@@ -158,36 +143,39 @@ function UpdateProfileModal({ isModalOpen, setIsModalOpen }) {
             />
           </div>
 
-          {/* Skills */}
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="skills" className="justify-end">
-              Skills
-            </Label>
+            <Label>Skills</Label>
             <Input
-              id="skills"
-              type="text"
               value={input.skills}
               onChange={(e) => setInput({ ...input, skills: e.target.value })}
-              placeholder="JavaScript, React, Node..."
               className="col-span-3"
             />
           </div>
 
-          {/* Resume */}
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="resume" className="justify-end">
-              Resume
-            </Label>
+            <Label>Profile Picture</Label>
             <Input
-              id="resume"
+              type="file"
+              accept="image/*"
+              onChange={(e) =>
+                setInput({ ...input, profilePicture: e.target.files[0] })
+              }
+              className="col-span-3"
+            />
+          </div>
+
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label>Resume</Label>
+            <Input
               type="file"
               accept=".pdf,.doc,.docx"
-              onChange={(e) => setInput({ ...input, file: e.target.files[0] })}
+              onChange={(e) =>
+                setInput({ ...input, resume: e.target.files[0] })
+              }
               className="col-span-3"
             />
           </div>
 
-          {/* Submit */}
           <DialogFooter>
             {loading ? (
               <Button disabled className="w-full">
