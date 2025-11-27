@@ -3,7 +3,9 @@ import userModel from "../models/user.model.js";
 import generateToken from "../utils/generateToken.js";
 import cloudinary from "../utils/cloudinary.js";
 
-// Cloudinary upload helper (stream-based)
+// -------------------------------
+// Cloudinary Upload Helper
+// -------------------------------
 function uploadToCloudinary(buffer, originalName, folder) {
   const clean = originalName.replace(/\s+/g, "_");
 
@@ -27,7 +29,9 @@ function uploadToCloudinary(buffer, originalName, folder) {
   });
 }
 
+// -------------------------------
 // REGISTER
+// -------------------------------
 export async function register(req, res) {
   try {
     const { fullName, email, password, phoneNumber, role } = req.body;
@@ -60,7 +64,7 @@ export async function register(req, res) {
       },
     };
 
-    // Profile picture upload
+    // Profile Picture
     const profilePic = req.files?.profilePicture?.[0];
     if (profilePic) {
       const upload = await uploadToCloudinary(
@@ -68,12 +72,11 @@ export async function register(req, res) {
         profilePic.originalname,
         "jobportal_profilepictures"
       );
-
       userData.profile.profilePictureURL = upload.secure_url;
       userData.profile.profilePictureOriginalName = profilePic.originalname;
     }
 
-    // Resume upload
+    // Resume
     const resume = req.files?.resume?.[0];
     if (resume) {
       const upload = await uploadToCloudinary(
@@ -81,7 +84,6 @@ export async function register(req, res) {
         resume.originalname,
         "jobportal_resumes"
       );
-
       userData.profile.resumeURL = upload.secure_url;
       userData.profile.resumeOriginalName = resume.originalname;
     }
@@ -89,7 +91,7 @@ export async function register(req, res) {
     await userModel.create(userData);
 
     return res.status(201).json({
-      message: "User registered successfully.",
+      message: "User registered successfully",
     });
   } catch (error) {
     console.error("Registration error:", error);
@@ -97,13 +99,14 @@ export async function register(req, res) {
   }
 }
 
+// -------------------------------
 // LOGIN
-
+// -------------------------------
 export async function login(req, res) {
   try {
     const { email, password, role } = req.body;
 
-    const user = await userModel.findOne({ email });
+    const user = await userModel.findOne({ email }).select("+password");
     if (!user) {
       return res.status(400).json({ message: "No user found." });
     }
@@ -119,10 +122,14 @@ export async function login(req, res) {
 
     const token = generateToken(user._id);
 
+    // Remove password before sending to frontend
+    const safeUser = user.toObject();
+    delete safeUser.password;
+
     return res.status(200).json({
       message: "Login successful",
       token,
-      user,
+      user: safeUser,
     });
   } catch (error) {
     console.error("Login error:", error);
@@ -130,8 +137,9 @@ export async function login(req, res) {
   }
 }
 
+// -------------------------------
 // UPDATE PROFILE
-
+// -------------------------------
 export async function updateUserProfile(req, res) {
   try {
     const userId = req.user._id;
@@ -160,7 +168,6 @@ export async function updateUserProfile(req, res) {
         profilePic.originalname,
         "jobportal_profilepictures"
       );
-
       user.profile.profilePictureURL = upload.secure_url;
       user.profile.profilePictureOriginalName = profilePic.originalname;
     }
@@ -173,16 +180,19 @@ export async function updateUserProfile(req, res) {
         resume.originalname,
         "jobportal_resumes"
       );
-
       user.profile.resumeURL = upload.secure_url;
       user.profile.resumeOriginalName = resume.originalname;
     }
 
     await user.save();
 
+    // Remove password before sending to frontend
+    const safeUser = user.toObject();
+    delete safeUser.password;
+
     return res.status(200).json({
       message: "Profile updated successfully",
-      user,
+      user: safeUser,
     });
   } catch (error) {
     console.error("Update profile error:", error);

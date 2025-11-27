@@ -9,6 +9,23 @@ import {
 } from "../ui/table";
 
 function AppliedJobs() {
+  // const token = localStorage.getItem("token");
+  // axios.defaults.headers.common["Authorization"] = `${token}`;
+  // useEffect(async () => {
+  //   // Fetch applied jobs from API when component mounts
+  //   try {
+  //     const response = await axios.get(`${APPLICATION_API_END_POINT}/my`);
+  //     if (response.status === 200) {
+  //       console.log("Applied Jobs:", response.data.applications);
+  //     }
+  //   } catch (error) {
+  //     console.error(
+  //       "Error fetching applied jobs:",
+  //       error?.response?.data?.message || error.message || error
+  //     );
+  //   }
+  // }, []);
+
   const appliedJobs = [
     {
       dateApplied: "2024-06-01",
