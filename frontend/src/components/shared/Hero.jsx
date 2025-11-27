@@ -41,7 +41,7 @@ function Hero() {
           nihil alias, cupiditate excepturi modi repudiandae.
         </p>
 
-        {/* Search bar — NO EXTRA MARGIN BELOW */}
+        {/* Search bar */}
         <div
           className="
             flex w-full max-w-lg mx-auto 

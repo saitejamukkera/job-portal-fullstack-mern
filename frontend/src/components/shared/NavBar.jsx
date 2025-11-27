@@ -60,10 +60,12 @@ function NavBar() {
           {!user ? (
             <div className="flex gap-5">
               <Link to="/login">
-                <Button variant="outline">Login</Button>
+                <Button variant="outline" className="cursor-pointer">
+                  Login
+                </Button>
               </Link>
-              <Link to="signup">
-                <Button>Signup</Button>
+              <Link to="/signup">
+                <Button className="cursor-pointer">Signup</Button>
               </Link>
             </div>
           ) : (

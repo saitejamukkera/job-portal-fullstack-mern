@@ -11,6 +11,7 @@ async function postJob(req, res) {
       description,
       requirements,
       location,
+      vacancies,
       salary,
       jobType,
       companyId,
@@ -18,13 +19,13 @@ async function postJob(req, res) {
 
     const userId = req.user._id;
 
-    // Required fields validation
     if (
       !title ||
       !description ||
       !requirements ||
       !location ||
-      !salary ||
+      vacancies === undefined ||
+      salary === undefined ||
       !jobType ||
       !companyId
     ) {
@@ -33,14 +34,22 @@ async function postJob(req, res) {
       });
     }
 
-    // Salary must be positive
     if (isNaN(salary) || salary <= 0) {
       return res
         .status(400)
         .json({ message: "Salary must be a positive number." });
     }
 
-    // Validate jobType
+    if (
+      isNaN(vacancies) ||
+      !Number.isInteger(Number(vacancies)) ||
+      vacancies < 0
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Vacancies must be a non-negative integer." });
+    }
+
     const jobTypeLower = jobType.toLowerCase();
     const validJobTypes = ["full-time", "part-time", "contract", "internship"];
 
@@ -48,7 +57,6 @@ async function postJob(req, res) {
       return res.status(400).json({ message: "Invalid job type." });
     }
 
-    // Ensure company belongs to the logged-in recruiter
     const company = await companyModel.findOne({
       _id: companyId,
       userId: userId,
@@ -60,13 +68,13 @@ async function postJob(req, res) {
       });
     }
 
-    // Create job
     const job = await jobModel.create({
       title,
       description,
       requirements,
       location,
-      salary,
+      vacancies: Number(vacancies),
+      salary: Number(salary),
       jobType: jobTypeLower,
       postedBy: userId,
       company: companyId,
@@ -100,7 +108,6 @@ async function getAllJobs(req, res) {
           { description: { $regex: keyword, $options: "i" } },
           { location: { $regex: keyword, $options: "i" } },
           { jobType: { $regex: keyword, $options: "i" } },
-          // Search inside requirements array
           { requirements: { $regex: keyword, $options: "i" } },
         ],
       };
@@ -131,12 +138,15 @@ async function getJobById(req, res) {
     const job = await jobModel
       .findById(jobId)
       .populate("company")
-      .populate("postedBy", "-password");
+      .populate("postedBy", "-password")
+      .populate({
+        path: "applications",
+        populate: { path: "applicant", select: "-password" },
+        options: { sort: { createdAt: -1 } },
+      });
 
     if (!job) {
-      return res.status(404).json({
-        message: "Job not found",
-      });
+      return res.status(404).json({ message: "Job not found" });
     }
 
     return res.status(200).json({ job });

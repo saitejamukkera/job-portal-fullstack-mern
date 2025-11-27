@@ -15,7 +15,7 @@ import { Spinner } from "../ui/spinner";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { toast } from "sonner";
-import { USER_API_END_POINT } from "@/utilis/User_Endpoints";
+import { USER_API_END_POINT } from "@/utilis/const_endpoints";
 import { setUser } from "@/redux/authSlice";
 
 function UpdateProfileModal({ isModalOpen, setIsModalOpen }) {

@@ -7,7 +7,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
 import axios from "axios";
-import { USER_API_END_POINT } from "../../utilis/User_Endpoints";
+import { USER_API_END_POINT } from "../../utilis/const_endpoints";
 import { useDispatch, useSelector } from "react-redux";
 import { setLoading, setUser } from "../../redux/authSlice";
 

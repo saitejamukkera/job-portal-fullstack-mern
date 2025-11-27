@@ -1,19 +1,25 @@
+import { useSelector } from "react-redux";
 import LatestJobCard from "./LatestJobCard";
 
-const jobs = [1, 2, 3, 4, 5, 6];
-
 function LatestJobs() {
+  const { jobs } = useSelector((store) => store.job);
+
   return (
-    <div className="max-w-7xl mx-auto my-20">
-      <h1 className="text-4xl font-bold">
+    <div className="max-w-7xl mx-auto my-16 px-4">
+      {/* Header */}
+      <h1 className="text-3xl md:text-4xl font-bold text-foreground">
         Latest & Top <span className="text-[#6A38C2]">Job Openings</span>
       </h1>
-      <div className="grid grid-cols-3 gap-4 my-5">
-        {jobs.map((job, index) => (
-          <div key={index} className="job-card">
-            <LatestJobCard />
-          </div>
-        ))}
+
+      {/* Job Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 my-6">
+        {jobs.length > 0 ? (
+          jobs.map((job) => <LatestJobCard key={job._id} job={job} />)
+        ) : (
+          <p className="text-center text-muted-foreground col-span-full">
+            No jobs available
+          </p>
+        )}
       </div>
     </div>
   );
