@@ -46,15 +46,40 @@ function NavBar() {
 
         <div className="flex items-center font-medium gap-7">
           <ul className="flex items-center gap-5">
-            <Link to="/" className="cursor-pointer hover:text-[#F83002]">
-              Home
-            </Link>
-            <Link to="/browse" className="cursor-pointer hover:text-[#F83002]">
-              Browse
-            </Link>
-            <Link to="/jobs" className="cursor-pointer hover:text-[#F83002]">
-              Jobs
-            </Link>
+            {user && user?.role === "recruiter" ? (
+              <>
+                <Link
+                  to="/admin/companies "
+                  className="cursor-pointer hover:text-[#F83002]"
+                >
+                  Companies
+                </Link>
+                <Link
+                  to="/admin/jobs"
+                  className="cursor-pointer hover:text-[#F83002]"
+                >
+                  Jobs
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link to="/" className="cursor-pointer hover:text-[#F83002]">
+                  Home
+                </Link>
+                <Link
+                  to="/browse"
+                  className="cursor-pointer hover:text-[#F83002]"
+                >
+                  Browse
+                </Link>
+                <Link
+                  to="/jobs"
+                  className="cursor-pointer hover:text-[#F83002]"
+                >
+                  Jobs
+                </Link>
+              </>
+            )}
           </ul>
 
           {!user ? (

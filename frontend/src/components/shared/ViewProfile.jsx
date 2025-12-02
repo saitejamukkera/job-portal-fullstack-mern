@@ -10,9 +10,9 @@ import UpdateProfileModal from "./UpdateProfileModal";
 import { useSelector } from "react-redux";
 
 function ViewProfile() {
-  //const skills = ["JavaScript", "React", "Node.js", "CSS", "HTML"];
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { user } = useSelector((state) => state.auth);
+
   const isResumeUploaded = Boolean(user?.profile?.resumeURL);
 
   return (
@@ -36,6 +36,7 @@ function ViewProfile() {
               <h1 className="font-semibold text-xl">
                 {user?.fullName || "No Name Provided"}
               </h1>
+
               <p className="text-sm text-muted-foreground">
                 {user?.profile?.bio || "No bio available"}
               </p>
@@ -66,53 +67,59 @@ function ViewProfile() {
           </div>
         </div>
 
-        {/* Skills */}
-        <div className="mt-6">
-          <h1 className="font-semibold text-md">Skills</h1>
+        {/* Applicant-specific profile fields */}
+        {user?.role === "applicant" && (
+          <>
+            {/* Skills */}
+            <div className="mt-6">
+              <h1 className="font-semibold text-md">Skills</h1>
 
-          {user?.profile?.skills?.length === 0 ? (
-            <span className="text-muted-foreground">NA</span>
-          ) : (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {user?.profile?.skills.map((skill, idx) => (
-                <Badge key={idx} className="px-3 py-1">
-                  {skill}
-                </Badge>
-              ))}
+              {!user?.profile?.skills?.length ? (
+                <span className="text-muted-foreground">NA</span>
+              ) : (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {user.profile.skills.map((skill, idx) => (
+                    <Badge key={idx} className="px-3 py-1">
+                      {skill}
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        {/* Resume */}
-        <div className="flex items-center gap-3 mt-6">
-          <Label className="font-semibold text-md">Resume:</Label>
+            {/* Resume */}
+            <div className="flex items-center gap-3 mt-6">
+              <Label className="font-semibold text-md">Resume:</Label>
 
-          {isResumeUploaded ? (
-            <Link
-              to={user?.profile?.resumeURL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline text-blue-600 dark:text-blue-400 hover:opacity-80"
-            >
-              {user?.profile?.resumeOriginalName || "View Resume"}
-            </Link>
-          ) : (
-            <span className="text-muted-foreground">NA</span>
-          )}
-        </div>
+              {isResumeUploaded ? (
+                <Link
+                  to={user?.profile?.resumeURL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline text-blue-600 dark:text-blue-400 hover:opacity-80"
+                >
+                  {user?.profile?.resumeOriginalName || "View Resume"}
+                </Link>
+              ) : (
+                <span className="text-muted-foreground">NA</span>
+              )}
+            </div>
+          </>
+        )}
       </div>
 
-      {/* Applied Jobs Section */}
-      {user?.profile?.companyApplied.length > 0 ? (
-        <div className="mt-6 max-w-4xl mx-auto px-1">
-          <h1 className="font-semibold text-md mb-3">Applied Jobs</h1>
-          <AppliedJobs />
-        </div>
-      ) : (
-        <div className="mt-6 max-w-4xl mx-auto px-1 text-center text-muted-foreground">
-          No applied jobs found.
-        </div>
-      )}
+      {/* ------------------ Applied Jobs Section (OUTSIDE profile container) ------------------ */}
+      {user?.role === "applicant" &&
+        (user?.profile?.companyApplied?.length > 0 ? (
+          <div className="mt-6 max-w-4xl mx-auto px-1">
+            <h1 className="font-semibold text-md mb-3">Applied Jobs</h1>
+            <AppliedJobs />
+          </div>
+        ) : (
+          <div className="mt-6 max-w-4xl mx-auto px-1 text-center text-muted-foreground">
+            No applied jobs found.
+          </div>
+        ))}
 
       {/* Modal */}
       <UpdateProfileModal

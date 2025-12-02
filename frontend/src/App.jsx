@@ -8,6 +8,9 @@ import Jobs from "./components/shared/Jobs";
 import Browse from "./components/shared/Browse";
 import ViewProfile from "./components/shared/ViewProfile";
 import JobDescription from "./components/shared/JobDescription";
+import Companies from "./components/shared/Admin/Companies";
+import CreateCompany from "./components/shared/Admin/CreateCompany";
+import SetupCompany from "./components/shared/Admin/SetupCompany";
 
 function App() {
   return (
@@ -22,6 +25,12 @@ function App() {
         <Route path="/view-profile" element={<ViewProfile />} />
         <Route path="/description/:id" element={<JobDescription />} />
         <Route path="*" element={<Navigate to="/" />} />
+
+        {/* Admin Routes */}
+
+        <Route path="/admin/companies" element={<Companies />} />
+        <Route path="/admin/companies/create" element={<CreateCompany />} />
+        <Route path="/admin/companies/:id" element={<SetupCompany />} />
       </Routes>
     </ThemeProvider>
   );

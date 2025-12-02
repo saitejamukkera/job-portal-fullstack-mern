@@ -12,10 +12,14 @@ const companySchema = new mongoose.Schema(
     },
     location: {
       type: String,
-      required: true,
     },
-    logo: {
+    logoURL: {
       type: String, //from cloudinary
+      default: "",
+    },
+    logoOriginalName: {
+      type: String,
+      default: "",
     },
     website: {
       type: String,

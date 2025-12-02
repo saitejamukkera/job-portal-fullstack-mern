@@ -30,8 +30,8 @@ function UpdateProfileModal({ isModalOpen, setIsModalOpen }) {
     phoneNumber: "",
     bio: "",
     skills: "",
-    profilePictureURL: null,
-    resumeURL: null,
+    profilePicture: null,
+    resume: null,
   });
 
   useEffect(() => {
@@ -42,8 +42,8 @@ function UpdateProfileModal({ isModalOpen, setIsModalOpen }) {
         phoneNumber: user.phoneNumber || "",
         bio: user.profile?.bio || "",
         skills: user.profile?.skills?.join(", ") || "",
-        profilePictureURL: user.profile?.profilePictureURL || "",
-        resumeURL: user.profile?.resumeURL || "",
+        profilePicture: null,
+        resume: null,
       });
     }
   }, [isModalOpen, user]);
@@ -53,18 +53,24 @@ function UpdateProfileModal({ isModalOpen, setIsModalOpen }) {
     setLoading(true);
 
     const formData = new FormData();
+
     formData.append("fullName", input.fullName);
     formData.append("email", input.email);
     formData.append("phoneNumber", input.phoneNumber);
     formData.append("bio", input.bio);
-    formData.append("skills", input.skills);
 
+    // Recruiters & applicants BOTH can update profile picture
     if (input.profilePicture) {
       formData.append("profilePicture", input.profilePicture);
     }
 
-    if (input.resume) {
-      formData.append("resume", input.resume);
+    // Applicants ONLY
+    if (user?.role === "applicant") {
+      formData.append("skills", input.skills);
+
+      if (input.resume) {
+        formData.append("resume", input.resume);
+      }
     }
 
     try {
@@ -105,6 +111,7 @@ function UpdateProfileModal({ isModalOpen, setIsModalOpen }) {
         </DialogHeader>
 
         <form className="space-y-5" onSubmit={handleSubmit}>
+          {/* FULL NAME */}
           <div className="grid grid-cols-4 items-center gap-4">
             <Label>Name</Label>
             <Input
@@ -114,6 +121,7 @@ function UpdateProfileModal({ isModalOpen, setIsModalOpen }) {
             />
           </div>
 
+          {/* BIO */}
           <div className="grid grid-cols-4 items-start gap-4">
             <Label>Bio</Label>
             <Textarea
@@ -123,6 +131,7 @@ function UpdateProfileModal({ isModalOpen, setIsModalOpen }) {
             />
           </div>
 
+          {/* EMAIL */}
           <div className="grid grid-cols-4 items-center gap-4">
             <Label>Email</Label>
             <Input
@@ -132,6 +141,7 @@ function UpdateProfileModal({ isModalOpen, setIsModalOpen }) {
             />
           </div>
 
+          {/* PHONE */}
           <div className="grid grid-cols-4 items-center gap-4">
             <Label>Number</Label>
             <Input
@@ -143,15 +153,38 @@ function UpdateProfileModal({ isModalOpen, setIsModalOpen }) {
             />
           </div>
 
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label>Skills</Label>
-            <Input
-              value={input.skills}
-              onChange={(e) => setInput({ ...input, skills: e.target.value })}
-              className="col-span-3"
-            />
-          </div>
+          {/* ------------------------ APPLICANT-ONLY FIELDS ------------------------ */}
+          {user?.role === "applicant" && (
+            <>
+              {/* SKILLS */}
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label>Skills</Label>
+                <Input
+                  value={input.skills}
+                  onChange={(e) =>
+                    setInput({ ...input, skills: e.target.value })
+                  }
+                  className="col-span-3"
+                />
+              </div>
 
+              {/* RESUME */}
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label>Resume</Label>
+                <Input
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  onChange={(e) =>
+                    setInput({ ...input, resume: e.target.files[0] })
+                  }
+                  className="col-span-3"
+                />
+              </div>
+            </>
+          )}
+          {/* ------------------------ END APPLICANT FIELDS ------------------------ */}
+
+          {/* PROFILE PIC (Both roles) */}
           <div className="grid grid-cols-4 items-center gap-4">
             <Label>Profile Picture</Label>
             <Input
@@ -159,18 +192,6 @@ function UpdateProfileModal({ isModalOpen, setIsModalOpen }) {
               accept="image/*"
               onChange={(e) =>
                 setInput({ ...input, profilePicture: e.target.files[0] })
-              }
-              className="col-span-3"
-            />
-          </div>
-
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label>Resume</Label>
-            <Input
-              type="file"
-              accept=".pdf,.doc,.docx"
-              onChange={(e) =>
-                setInput({ ...input, resume: e.target.files[0] })
               }
               className="col-span-3"
             />
