@@ -109,17 +109,12 @@ function ViewProfile() {
       </div>
 
       {/* ------------------ Applied Jobs Section (OUTSIDE profile container) ------------------ */}
-      {user?.role === "applicant" &&
-        (user?.profile?.companyApplied?.length > 0 ? (
-          <div className="mt-6 max-w-4xl mx-auto px-1">
-            <h1 className="font-semibold text-md mb-3">Applied Jobs</h1>
-            <AppliedJobs />
-          </div>
-        ) : (
-          <div className="mt-6 max-w-4xl mx-auto px-1 text-center text-muted-foreground">
-            No applied jobs found.
-          </div>
-        ))}
+      {user?.role === "applicant" && (
+        <div className="mt-6 max-w-4xl mx-auto px-1">
+          <h1 className="font-semibold text-md mb-3">Applied Jobs</h1>
+          <AppliedJobs />
+        </div>
+      )}
 
       {/* Modal */}
       <UpdateProfileModal

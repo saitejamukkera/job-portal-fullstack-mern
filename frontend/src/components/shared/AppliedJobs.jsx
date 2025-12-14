@@ -7,56 +7,46 @@ import {
   TableBody,
   TableCell,
 } from "../ui/table";
+import useGetAppliedJobs from "@/customHooks/useGetAppliedJobs";
+import { capitalizeEachWord } from "@/utilis/CapitalizeEachWord";
 
 function AppliedJobs() {
-  // const token = localStorage.getItem("token");
-  // axios.defaults.headers.common["Authorization"] = `${token}`;
-  // useEffect(async () => {
-  //   // Fetch applied jobs from API when component mounts
-  //   try {
-  //     const response = await axios.get(`${APPLICATION_API_END_POINT}/my`);
-  //     if (response.status === 200) {
-  //       console.log("Applied Jobs:", response.data.applications);
-  //     }
-  //   } catch (error) {
-  //     console.error(
-  //       "Error fetching applied jobs:",
-  //       error?.response?.data?.message || error.message || error
-  //     );
-  //   }
-  // }, []);
-
-  const appliedJobs = [
-    {
-      dateApplied: "2024-06-01",
-      jobTitle: "Frontend Developer",
-      company: "Tech Solutions",
-      status: "Pending",
-    },
-    {
-      dateApplied: "2024-05-28",
-      jobTitle: "Backend Developer",
-      company: "Innovatech",
-      status: "Accepted",
-    },
-    {
-      dateApplied: "2024-05-20",
-      jobTitle: "Full Stack Developer",
-      company: "DevWorks",
-      status: "Rejected",
-    },
-  ];
+  const { appliedJobs, loading, error } = useGetAppliedJobs();
 
   const getStatusStyles = (status) => {
-    switch (status) {
-      case "Accepted":
+    switch (status?.toLowerCase()) {
+      case "accepted":
         return "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300";
-      case "Pending":
+      case "pending":
         return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300";
       default:
         return "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300";
     }
   };
+
+  if (loading) {
+    return (
+      <div className="w-full border border-border bg-accent rounded-lg mt-4 px-4 py-8 text-center">
+        Loading applied jobs...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full border border-border bg-accent rounded-lg mt-4 px-4 py-8 text-center text-red-500">
+        Error loading applied jobs.
+      </div>
+    );
+  }
+
+  if (!appliedJobs || appliedJobs.length === 0) {
+    return (
+      <div className="w-full border border-border bg-accent rounded-lg mt-4 px-4 py-8 text-center text-muted-foreground">
+        No applied jobs found.
+      </div>
+    );
+  }
 
   return (
     <div className="w-full border border-border bg-accent rounded-lg mt-4 px-4 py-4 md:px-8">
@@ -72,14 +62,18 @@ function AppliedJobs() {
           </TableHeader>
 
           <TableBody>
-            {appliedJobs.map((job, index) => (
-              <TableRow key={index}>
-                <TableCell>{job.dateApplied}</TableCell>
-                <TableCell>{job.jobTitle}</TableCell>
-                <TableCell>{job.company}</TableCell>
+            {appliedJobs.map((application) => (
+              <TableRow key={application._id}>
+                <TableCell>
+                  {new Date(application.createdAt).toLocaleDateString()}
+                </TableCell>
+                <TableCell>{application.job?.title || "N/A"}</TableCell>
+                <TableCell>
+                  {application.job?.company?.companyName || "N/A"}
+                </TableCell>
                 <TableCell className="text-right">
-                  <Badge className={getStatusStyles(job.status)}>
-                    {job.status}
+                  <Badge className={getStatusStyles(application.status)}>
+                    {capitalizeEachWord(application.status) || "Pending"}
                   </Badge>
                 </TableCell>
               </TableRow>

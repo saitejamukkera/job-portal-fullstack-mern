@@ -37,7 +37,7 @@ function NavBar() {
     <div className="bg-white dark:bg-gray-950 shadow-sm dark:shadow-lg transition-colors">
       <div className="flex justify-between items-center mx-auto max-w-7xl h-16 px-4">
         <div className="cursor-pointer">
-          <Link to="/">
+          <Link to={user?.role === "recruiter" ? "/admin/companies" : "/"}>
             <h1 className="text-2xl font-semibold text-gray-900 dark:text-white transition-colors">
               Job<span className="text-[#F83002]">Portal</span>
             </h1>

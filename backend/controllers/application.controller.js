@@ -73,7 +73,10 @@ async function getAppliedJobs(req, res) {
       .find({ applicant: userId })
       .populate({
         path: "job",
-        populate: { path: "company" },
+        populate: {
+          path: "company",
+          model: "Company",
+        },
       })
       .sort({ createdAt: -1 });
 

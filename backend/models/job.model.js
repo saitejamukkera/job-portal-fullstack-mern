@@ -60,6 +60,9 @@ const jobSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Add text index for faster search queries
+jobSchema.index({ title: "text", description: "text", location: "text" });
+
 const jobModel = mongoose.model("Job", jobSchema);
 
 export default jobModel;

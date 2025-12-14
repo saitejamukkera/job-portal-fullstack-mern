@@ -94,18 +94,63 @@ async function postJob(req, res) {
 async function getAllJobs(req, res) {
   try {
     const keyword = req.query.keyword || "";
+    const locationFilter = req.query.location || "";
+    const jobTypeFilter = req.query.jobType || "";
+    const salaryRangeFilter = req.query.salaryRange || "";
 
-    const filter = keyword
-      ? {
-          $or: [
-            { title: { $regex: keyword, $options: "i" } },
-            { description: { $regex: keyword, $options: "i" } },
-            { location: { $regex: keyword, $options: "i" } },
-            { jobType: { $regex: keyword, $options: "i" } },
-            { requirements: { $regex: keyword, $options: "i" } },
-          ],
+    const conditions = [];
+
+    // Keyword search
+    if (keyword) {
+      conditions.push({
+        $or: [
+          { title: { $regex: keyword, $options: "i" } },
+          { description: { $regex: keyword, $options: "i" } },
+          { location: { $regex: keyword, $options: "i" } },
+          { jobType: { $regex: keyword, $options: "i" } },
+          { requirements: { $regex: keyword, $options: "i" } },
+        ],
+      });
+    }
+
+    // Location filter
+    if (locationFilter) {
+      const locations = locationFilter.split(",").map((loc) => loc.trim());
+      conditions.push({
+        location: { $regex: locations.join("|"), $options: "i" },
+      });
+    }
+
+    // Job type filter
+    if (jobTypeFilter) {
+      const jobTypes = jobTypeFilter
+        .split(",")
+        .map((type) => type.trim().toLowerCase());
+      conditions.push({
+        jobType: { $in: jobTypes },
+      });
+    }
+
+    // Salary range filter
+    if (salaryRangeFilter) {
+      const ranges = salaryRangeFilter.split(",");
+      const salaryConditions = [];
+
+      ranges.forEach((range) => {
+        if (range === "100000+") {
+          salaryConditions.push({ salary: { $gte: 100000 } });
+        } else if (range.includes("-")) {
+          const [min, max] = range.split("-").map(Number);
+          salaryConditions.push({ salary: { $gte: min, $lte: max } });
         }
-      : {};
+      });
+
+      if (salaryConditions.length > 0) {
+        conditions.push({ $or: salaryConditions });
+      }
+    }
+
+    const filter = conditions.length > 0 ? { $and: conditions } : {};
 
     const jobs = await jobModel
       .find(filter)

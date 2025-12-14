@@ -2,8 +2,20 @@ import { Input } from "../ui/input";
 import { LuSearch } from "react-icons/lu";
 import { Button } from "../ui/button";
 import { Typewriter } from "react-simple-typewriter";
+import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { setSearchQuery } from "@/redux/jobSlice";
+import { useNavigate } from "react-router-dom";
 
 function Hero() {
+  const [query, setQuery] = useState("");
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  function searchJobHandler() {
+    dispatch(setSearchQuery(query));
+    navigate("/browse");
+  }
   return (
     <section className="text-center px-4 pt-12 md:pt-16 pb-0">
       <div className="flex flex-col gap-6">
@@ -58,6 +70,9 @@ function Hero() {
               rounded-l-full border-none shadow-none 
               bg-background
             "
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && searchJobHandler()}
+            value={query}
           />
 
           <Button
@@ -67,6 +82,7 @@ function Hero() {
               flex items-center justify-center 
               cursor-pointer
             "
+            onClick={searchJobHandler}
           >
             <LuSearch className="size-5 text-white" />
           </Button>

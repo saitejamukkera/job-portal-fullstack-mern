@@ -5,9 +5,17 @@ import Footer from "./Footer";
 import useGetAllJobs from "@/customHooks/useGetAllJobs";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { setSearchQuery } from "@/redux/jobSlice";
 
 function Home() {
+  const dispatch = useDispatch();
+
+  // Clear search query when visiting Home page to show all jobs
+  useEffect(() => {
+    dispatch(setSearchQuery(""));
+  }, [dispatch]);
+
   useGetAllJobs();
 
   const { user } = useSelector((store) => store.auth);
@@ -16,6 +24,7 @@ function Home() {
   useEffect(() => {
     user?.role === "recruiter" && navigate("/admin/companies");
   }, []);
+
   return (
     <div>
       {/* <NavBar /> */}

@@ -4,10 +4,14 @@ import FilterCard from "./FilterCard";
 import { Button } from "../ui/button";
 import { X } from "lucide-react";
 import { useSelector } from "react-redux";
+import useGetAllJobs from "@/customHooks/useGetAllJobs";
+import { Spinner } from "../ui/spinner";
+import { motion } from "framer-motion";
 
 function Jobs() {
+  useGetAllJobs();
   const [open, setOpen] = useState(false);
-  const { jobs } = useSelector((store) => store.job);
+  const { jobs, isLoading } = useSelector((store) => store.job);
 
   return (
     <div className="max-w-7xl mx-auto mt-6 px-3 sm:px-4">
@@ -47,16 +51,26 @@ function Jobs() {
 
         {/* Job Cards */}
         <div className="flex-1">
-          {jobs?.length === 0 ? (
+          {isLoading ? (
+            <div className="flex justify-center items-center py-20">
+              <Spinner className="size-8 text-[#6A38C2]" />
+            </div>
+          ) : jobs?.length === 0 ? (
             <div className="text-center py-10 text-muted-foreground">
               No jobs found.
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7 w-full">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -100 }}
+              transition={{ duration: 0.5 }}
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7 w-full"
+            >
               {jobs?.map((job) => (
                 <Job key={job._id} job={job} />
               ))}
-            </div>
+            </motion.div>
           )}
         </div>
       </div>

@@ -20,7 +20,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Edit2, MoreHorizontal, TrashIcon } from "lucide-react";
+import { Edit2, Eye, MoreHorizontal, TrashIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import axios from "axios";
@@ -128,6 +128,16 @@ function AdminJobsTable() {
                         >
                           <Edit2 className="w-4" />
                           Edit
+                        </div>
+
+                        <div
+                          onClick={() =>
+                            navigate(`/admin/jobs/${job._id}/applicants`)
+                          }
+                          className="flex items-center gap-2 cursor-pointer hover:opacity-80"
+                        >
+                          <Eye className="w-4" />
+                          Applicants
                         </div>
 
                         <div
