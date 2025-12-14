@@ -91,7 +91,7 @@ function NavBar() {
         <div className="cursor-pointer">
           <Link to={user?.role === "recruiter" ? "/admin/companies" : "/"}>
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white transition-colors">
-              Job<span className="text-[#F83002]">Portal</span>
+              Job<span className="text-[#F83002]">Radar</span>
             </h1>
           </Link>
         </div>

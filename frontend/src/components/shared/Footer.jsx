@@ -15,7 +15,7 @@ function Footer() {
           <div className="sm:col-span-2 lg:col-span-1 text-center sm:text-left">
             <Link to="/" className="inline-block">
               <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                Job<span className="text-[#F83002]">Portal</span>
+                Job<span className="text-[#F83002]">Radar</span>
               </h2>
             </Link>
             <p className="mt-4 text-sm text-muted-foreground leading-relaxed max-w-xs mx-auto sm:mx-0">
@@ -27,7 +27,7 @@ function Footer() {
             <div className="mt-6 space-y-2">
               <div className="flex items-center justify-center sm:justify-start gap-2 text-sm text-muted-foreground">
                 <LuMail className="size-4" />
-                <span>support@jobportal.com</span>
+                <span>support@jobradar.com</span>
               </div>
               <div className="flex items-center justify-center sm:justify-start gap-2 text-sm text-muted-foreground">
                 <LuMapPin className="size-4" />
@@ -135,7 +135,7 @@ function Footer() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-sm text-muted-foreground text-center sm:text-left">
-              © {currentYear} JobPortal. All rights reserved.
+              © {currentYear} JobRadar. All rights reserved.
             </p>
             <p className="text-sm text-muted-foreground flex items-center gap-1">
               Made with <span className="text-red-500 animate-pulse">❤️</span>{" "}
