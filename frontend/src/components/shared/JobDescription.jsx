@@ -20,7 +20,7 @@ import {
   LuDollarSign,
   LuUsers,
   LuCalendar,
-  LuCheckCircle,
+  LuCircleCheck,
 } from "react-icons/lu";
 
 function JobDescription() {
@@ -143,7 +143,7 @@ function JobDescription() {
             >
               {isApplied ? (
                 <>
-                  <LuCheckCircle className="size-4 mr-2" />
+                  <LuCircleCheck className="size-4 mr-2" />
                   Applied
                 </>
               ) : (
