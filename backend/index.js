@@ -16,8 +16,24 @@ const app = express();
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// Secure CORS - only allow your frontend
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "https://job-portal-website-iota.vercel.app",
+];
+
 const corsOptions = {
-  origin: true,
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   optionsSuccessStatus: 200,
   credentials: true,
 };
