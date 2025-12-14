@@ -1,5 +1,5 @@
 import NavBar from "./components/shared/NavBar";
-import { ThemeProvider } from "./components/shared/Themeprovider";
+import { ThemeProvider } from "./components/shared/ThemeProvider";
 import { Routes, Navigate, Route } from "react-router-dom";
 import Login from "./components/shared/Login";
 import Signup from "./components/shared/Signup";
