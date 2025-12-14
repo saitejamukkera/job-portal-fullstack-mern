@@ -13,6 +13,15 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import axios from "axios";
 import { setJob } from "@/redux/jobSlice";
+import { Avatar, AvatarImage } from "../ui/avatar";
+import {
+  LuMapPin,
+  LuBriefcase,
+  LuDollarSign,
+  LuUsers,
+  LuCalendar,
+  LuCheckCircle,
+} from "react-icons/lu";
 
 function JobDescription() {
   const dispatch = useDispatch();
@@ -41,9 +50,11 @@ function JobDescription() {
   // Loader
   if (loading || !job) {
     return (
-      <div className="flex justify-center items-center h-[60vh]">
-        <Spinner className="mr-2" />
-        <span className="text-lg font-medium">Loading job details...</span>
+      <div className="flex flex-col justify-center items-center h-[60vh] gap-3">
+        <Spinner className="size-8" />
+        <span className="text-lg font-medium text-muted-foreground">
+          Loading job details...
+        </span>
       </div>
     );
   }
@@ -55,7 +66,7 @@ function JobDescription() {
       );
 
       if (response.status === 201) {
-        setIsApplied(true); //update apply now button immediately after successful application
+        setIsApplied(true);
         dispatch(setJob(response.data.job));
         toast.success("Successfully applied for the job");
       }
@@ -68,92 +79,182 @@ function JobDescription() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto my-10 px-4">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="font-bold text-2xl">{job?.title}</h1>
+    <div className="max-w-4xl mx-auto my-6 sm:my-10 px-4">
+      {/* Header Card */}
+      <div className="bg-card border border-border rounded-xl p-4 sm:p-6 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+          {/* Company Logo */}
+          <Avatar className="size-14 sm:size-16 rounded-xl shadow-md border border-border">
+            <AvatarImage
+              src={job?.company?.logoURL || "https://via.placeholder.com/64"}
+              alt={job?.company?.companyName}
+            />
+          </Avatar>
 
-          <div className="flex items-center gap-2 mt-3 flex-wrap">
-            <Badge
-              variant="secondary"
-              className="text-blue-700 dark:text-blue-300 font-medium"
+          {/* Job Info */}
+          <div className="flex-1">
+            <h1 className="font-bold text-xl sm:text-2xl text-foreground">
+              {job?.title}
+            </h1>
+            <p className="text-muted-foreground mt-1 text-sm sm:text-base">
+              {capitalizeEachWordPreservingDelimiters(
+                job?.company?.companyName
+              )}
+            </p>
+
+            {/* Badges */}
+            <div className="flex flex-wrap items-center gap-2 mt-3">
+              <Badge
+                variant="secondary"
+                className="text-blue-600 dark:text-blue-400 font-medium"
+              >
+                {capitalizeEachWord(job?.jobType)}
+              </Badge>
+
+              <Badge
+                variant="secondary"
+                className="text-orange-600 dark:text-orange-400 font-medium"
+              >
+                {job?.vacancies} Vacancies
+              </Badge>
+
+              <Badge
+                variant="secondary"
+                className="text-purple-600 dark:text-purple-400 font-medium"
+              >
+                ${job?.salary?.toLocaleString()} / yr
+              </Badge>
+            </div>
+          </div>
+
+          {/* Apply Button */}
+          <div className="sm:ml-auto">
+            <Button
+              disabled={isApplied || !user || user?.role !== "applicant"}
+              className={`
+                w-full sm:w-auto cursor-pointer h-11 px-6 font-medium
+                ${
+                  isApplied
+                    ? "bg-green-600 hover:bg-green-600 text-white"
+                    : "bg-[#6A38C2] hover:bg-[#5b2eb0]"
+                }
+              `}
+              onClick={handleApplyJob}
             >
-              {capitalizeEachWord(job?.jobType)}
-            </Badge>
+              {isApplied ? (
+                <>
+                  <LuCheckCircle className="size-4 mr-2" />
+                  Applied
+                </>
+              ) : (
+                "Apply Now"
+              )}
+            </Button>
+          </div>
+        </div>
+      </div>
 
-            <Badge variant="secondary" className="text-[#F83002] font-medium">
-              {job?.vacancies} Vacancies
-            </Badge>
+      {/* Description Section */}
+      <div className="mt-6 bg-card border border-border rounded-xl p-4 sm:p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-foreground mb-3">
+          About this role
+        </h2>
+        <p className="text-muted-foreground leading-relaxed">
+          {job?.description}
+        </p>
+      </div>
 
-            <Badge
-              variant="secondary"
-              className="text-[#7209b7] dark:text-purple-300 font-medium"
-            >
-              ${job?.salary} / Year
-            </Badge>
+      {/* Details Grid */}
+      <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Location */}
+        <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+              <LuMapPin className="size-5 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Location</p>
+              <p className="font-medium text-foreground">
+                {capitalizeEachWordPreservingDelimiters(job?.location)}
+              </p>
+            </div>
           </div>
         </div>
 
-        <Button
-          disabled={isApplied}
-          className="cursor-pointer"
-          onClick={handleApplyJob}
-        >
-          {isApplied ? "Already Applied" : "Apply Now"}
-        </Button>
+        {/* Job Type */}
+        <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
+              <LuBriefcase className="size-5 text-purple-600 dark:text-purple-400" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Job Type</p>
+              <p className="font-medium text-foreground">
+                {capitalizeEachWord(job?.jobType)}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Salary */}
+        <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
+              <LuDollarSign className="size-5 text-green-600 dark:text-green-400" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Salary</p>
+              <p className="font-medium text-foreground">
+                ${job?.salary?.toLocaleString()} / year
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Applicants */}
+        <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
+              <LuUsers className="size-5 text-orange-600 dark:text-orange-400" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Applicants</p>
+              <p className="font-medium text-foreground">
+                {job?.applications?.length} applied
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <h1 className="border-b border-border font-medium py-4 mt-6">
-        {job?.description}
-      </h1>
+      {/* Requirements Section */}
+      {job?.requirements?.length > 0 && (
+        <div className="mt-6 bg-card border border-border rounded-xl p-4 sm:p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-foreground mb-3">
+            Requirements
+          </h2>
+          <ul className="space-y-2">
+            {job?.requirements?.map((req, index) => (
+              <li key={index} className="flex items-start gap-2">
+                <span className="text-primary mt-1">•</span>
+                <span className="text-muted-foreground">{req}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
-      <div className="my-4 flex flex-col gap-2 text-base">
-        <p>
-          <span className="font-semibold">Role:</span>{" "}
-          {capitalizeEachWordPreservingDelimiters(job?.title)}
-        </p>
-
-        <p>
-          <span className="font-semibold">Required Skills:</span>{" "}
-          {job?.requirements?.length > 0 ? (
-            <ul className="list-disc ml-5 mt-1">
-              {job?.requirements?.map((req, index) => (
-                <li key={index}>{req}</li>
-              ))}
-            </ul>
-          ) : (
-            "NA"
-          )}
-        </p>
-
-        <p>
-          <span className="font-semibold">Location:</span>{" "}
-          {capitalizeEachWordPreservingDelimiters(job?.location)}
-        </p>
-
-        <p>
-          <span className="font-semibold">Description:</span>{" "}
-          {capitalizeEachWordPreservingDelimiters(job?.description)}
-        </p>
-
-        <p>
-          <span className="font-semibold">Experience:</span>{" "}
-          {capitalizeEachWord(job?.jobType)}
-        </p>
-
-        <p>
-          <span className="font-semibold">Salary:</span> ${job?.salary} / Year
-        </p>
-
-        <p>
-          <span className="font-semibold">Total Applicants:</span>{" "}
-          {job?.applications?.length}
-        </p>
-
-        <p>
-          <span className="font-semibold">Posted Date:</span>{" "}
-          {new Date(job?.createdAt).toLocaleDateString()}
-        </p>
+      {/* Posted Date */}
+      <div className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
+        <LuCalendar className="size-4" />
+        <span>
+          Posted on{" "}
+          {new Date(job?.createdAt).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })}
+        </span>
       </div>
     </div>
   );

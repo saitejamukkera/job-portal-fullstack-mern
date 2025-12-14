@@ -10,18 +10,17 @@ import axios from "axios";
 import { USER_API_END_POINT } from "../../utilis/const_endpoints";
 import { useDispatch, useSelector } from "react-redux";
 import { setLoading, setUser } from "../../redux/authSlice";
+import { LuMail, LuLock, LuUser, LuBriefcase } from "react-icons/lu";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("applicant"); // lowercase
+  const [role, setRole] = useState("applicant");
   const [error, setError] = useState("");
-  //const inputRef = useRef(null);
-  //const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
-  const dispatch = useDispatch(); // redux dispatch
-  const { loading } = useSelector((store) => store.auth); // get loading from redux
+  const dispatch = useDispatch();
+  const { loading } = useSelector((store) => store.auth);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -37,12 +36,9 @@ function Login() {
       });
 
       if (resp.status === 200) {
-        // Save token + user
         localStorage.setItem("token", `Bearer ${resp.data.token}`);
         localStorage.setItem("user", JSON.stringify(resp.data.user));
-
-        dispatch(setUser(resp.data.user)); // set user in redux
-
+        dispatch(setUser(resp.data.user));
         toast.success(`Welcome back ${resp.data.user.fullName}.`);
         navigate("/");
       }
@@ -51,101 +47,147 @@ function Login() {
       setError(msg);
       toast.error(msg);
     } finally {
-      dispatch(setLoading(false)); // set loading false in redux
+      dispatch(setLoading(false));
     }
   }
 
   return (
-    <div className="flex items-center justify-center w-full  px-4">
-      <form
-        className="
-          w-full max-w-sm 
-          border border-border 
-          rounded-md p-6 my-10 
-          shadow-sm 
-          bg-background 
-          text-foreground
-        "
-        onSubmit={handleSubmit}
-      >
-        <h1 className="font-semibold text-2xl mb-6 text-center">Login</h1>
+    <div className="flex items-center justify-center w-full min-h-[calc(100vh-80px)] px-4 py-8">
+      <div className="w-full max-w-md">
+        {/* Header */}
+        <div className="text-center mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+            Welcome Back
+          </h1>
+          <p className="text-muted-foreground mt-2 text-sm">
+            Sign in to continue your job search
+          </p>
+        </div>
 
-        <div className="flex flex-col gap-4">
-          {/* Email */}
-          <div>
-            <Label>Email</Label>
-            <Input
-              type="email"
-              placeholder="johndoe@gmail.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-2"
-              onFocus={() => setError("")}
-              required
-            />
-          </div>
+        <form
+          className="
+            border border-border 
+            rounded-xl p-6 sm:p-8 
+            shadow-lg 
+            bg-card 
+            text-card-foreground
+          "
+          onSubmit={handleSubmit}
+        >
+          <div className="flex flex-col gap-5">
+            {/* Email */}
+            <div>
+              <Label className="text-sm font-medium">Email</Label>
+              <div className="relative mt-2">
+                <LuMail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                <Input
+                  type="email"
+                  placeholder="johndoe@gmail.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pl-10"
+                  onFocus={() => setError("")}
+                  required
+                />
+              </div>
+            </div>
 
-          {/* Password */}
-          <div>
-            <Label>Password</Label>
-            <Input
-              type="password"
-              placeholder="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-2"
-              onFocus={() => setError("")}
-              required
-            />
-          </div>
+            {/* Password */}
+            <div>
+              <Label className="text-sm font-medium">Password</Label>
+              <div className="relative mt-2">
+                <LuLock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                <Input
+                  type="password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pl-10"
+                  onFocus={() => setError("")}
+                  required
+                />
+              </div>
+            </div>
 
-          {/* Role */}
-          <div className="flex flex-col md:flex-row gap-6">
-            <div className="flex flex-col gap-2">
-              <Label>Role</Label>
+            {/* Role */}
+            <div>
+              <Label className="text-sm font-medium">Login as</Label>
               <RadioGroup
                 onValueChange={setRole}
                 value={role}
-                className="flex gap-4 mt-3"
+                className="flex flex-wrap gap-4 mt-3"
               >
-                <div className="flex items-center space-x-2">
+                <label
+                  htmlFor="Applicant"
+                  className={`
+                    flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-all
+                    ${
+                      role === "applicant"
+                        ? "border-primary bg-primary/5 text-primary"
+                        : "border-border hover:border-muted-foreground"
+                    }
+                  `}
+                >
                   <RadioGroupItem value="applicant" id="Applicant" />
-                  <Label htmlFor="Applicant">Applicant</Label>
-                </div>
+                  <LuUser className="size-4" />
+                  <span className="text-sm font-medium">Applicant</span>
+                </label>
 
-                <div className="flex items-center space-x-2">
+                <label
+                  htmlFor="Recruiter"
+                  className={`
+                    flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-all
+                    ${
+                      role === "recruiter"
+                        ? "border-primary bg-primary/5 text-primary"
+                        : "border-border hover:border-muted-foreground"
+                    }
+                  `}
+                >
                   <RadioGroupItem value="recruiter" id="Recruiter" />
-                  <Label htmlFor="Recruiter">Recruiter</Label>
-                </div>
+                  <LuBriefcase className="size-4" />
+                  <span className="text-sm font-medium">Recruiter</span>
+                </label>
               </RadioGroup>
             </div>
+
+            {/* Error */}
+            {error && (
+              <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                <p className="text-red-600 dark:text-red-400 text-center text-sm">
+                  {error}
+                </p>
+              </div>
+            )}
+
+            {/* Button */}
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full h-11 text-base font-medium cursor-pointer"
+            >
+              {loading ? (
+                <>
+                  <Spinner className="mr-2" />
+                  Signing in...
+                </>
+              ) : (
+                "Sign In"
+              )}
+            </Button>
+
+            <p className="text-center text-muted-foreground text-sm">
+              Don't have an account?{" "}
+              <Link
+                to="/signup"
+                className="text-primary font-medium hover:underline"
+              >
+                Sign Up
+              </Link>
+            </p>
           </div>
-
-          {/* Error */}
-          {error && (
-            <p className="text-red-500 text-center text-sm mt-2">{error}</p>
-          )}
-
-          {/* Button */}
-          {loading ? (
-            <Button disabled className="w-full cursor-not-allowed">
-              <Spinner />
-              Loading...
-            </Button>
-          ) : (
-            <Button type="submit" className="w-full cursor-pointer">
-              Login
-            </Button>
-          )}
-
-          <p className="text-center text-muted-foreground">
-            Don't have an account?{" "}
-            <Link to="/signup" className="text-primary hover:underline">
-              Sign Up
-            </Link>
-          </p>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 }
