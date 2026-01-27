@@ -41,7 +41,7 @@ function JobDescription() {
     if (!job || !user) return;
 
     const applied = job?.applications?.some(
-      (application) => application.applicant?._id?.toString() === user?._id
+      (application) => application.applicant?._id?.toString() === user?._id,
     );
 
     setIsApplied(applied);
@@ -60,9 +60,24 @@ function JobDescription() {
   }
 
   async function handleApplyJob() {
+    // Check if user has a resume before applying
+    if (!user?.profile?.resumeURL || user.profile.resumeURL.trim() === "") {
+      toast.error(
+        "Please upload your resume in your profile before applying for jobs",
+        {
+          duration: 5000,
+          action: {
+            label: "Go to Profile",
+            onClick: () => (window.location.href = "/view-profile"),
+          },
+        },
+      );
+      return;
+    }
+
     try {
       const response = await axios.post(
-        `${APPLICATION_API_END_POINT}/apply/${job._id}`
+        `${APPLICATION_API_END_POINT}/apply/${job._id}`,
       );
 
       if (response.status === 201) {
@@ -72,9 +87,21 @@ function JobDescription() {
       }
     } catch (error) {
       console.error("Error applying for job:", error?.response?.data || error);
-      toast.error(
-        error?.response?.data?.message || "Failed to apply for the job"
-      );
+
+      // Handle resume requirement error from backend
+      if (error?.response?.data?.requiresResume) {
+        toast.error(error?.response?.data?.message, {
+          duration: 5000,
+          action: {
+            label: "Go to Profile",
+            onClick: () => (window.location.href = "/profile"),
+          },
+        });
+      } else {
+        toast.error(
+          error?.response?.data?.message || "Failed to apply for the job",
+        );
+      }
     }
   }
 
@@ -98,7 +125,7 @@ function JobDescription() {
             </h1>
             <p className="text-muted-foreground mt-1 text-sm sm:text-base">
               {capitalizeEachWordPreservingDelimiters(
-                job?.company?.companyName
+                job?.company?.companyName,
               )}
             </p>
 

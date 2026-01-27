@@ -1,5 +1,6 @@
 import applicationModel from "../models/application.model.js";
 import jobModel from "../models/job.model.js";
+import userModel from "../models/user.model.js";
 
 /**
  * POST /jobs/:jobId/apply  (Applicant only)
@@ -13,8 +14,21 @@ async function applyJob(req, res) {
       return res.status(400).json({ message: "Job ID is required" });
     }
 
+    // Check if user has a resume uploaded
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (!user.profile?.resumeURL || user.profile.resumeURL.trim() === "") {
+      return res.status(400).json({
+        message: "Please upload your resume before applying for jobs",
+        requiresResume: true,
+      });
+    }
+
     // Check if the job exists
-    const job = await jobModel.findById(jobId);
+    const job = await jobModel.findById(jobId).populate("company");
     if (!job) {
       return res.status(404).json({ message: "Job not found" });
     }
@@ -40,6 +54,13 @@ async function applyJob(req, res) {
     // Add to job document
     job.applications.push(newApplication._id);
     await job.save();
+
+    // Add company to user's companyApplied array (if not already present)
+    const companyId = job.company._id;
+    if (!user.profile.companyApplied.includes(companyId)) {
+      user.profile.companyApplied.push(companyId);
+      await user.save();
+    }
 
     const updatedJob = await jobModel.findById(jobId).populate({
       path: "applications",
